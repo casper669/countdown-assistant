@@ -79,18 +79,22 @@ clock/
 ├── Models/                     # 数据模型
 │   ├── WorkTimeConfig.swift    # 工作时间配置
 │   ├── WorkDayStatus.swift     # 工作日状态
-│   └── Holiday.swift           # 假期模型
+│   ├── Holiday.swift           # 假期模型
+│   └── AIConfig.swift          # AI 配置模型
 ├── ViewModels/                 # 视图模型
 │   ├── CountdownViewModel.swift    # 倒计时视图模型
 │   └── HolidayViewModel.swift      # 假期视图模型
 ├── Views/                      # 视图
 │   ├── MainWindowView.swift    # 主窗口
-│   └── SettingsView.swift      # 设置窗口
+│   ├── SettingsView.swift      # 设置窗口
+│   └── MenuBarView.swift       # 菜单栏视图
 ├── Services/                   # 服务层
 │   ├── ConfigManager.swift         # 配置管理
 │   ├── NotificationManager.swift   # 通知管理
 │   ├── CountdownCalculator.swift   # 倒计时计算
-│   └── HolidayAPIService.swift     # 假期 API 服务
+│   ├── HolidayAPIService.swift     # 假期 API 服务
+│   ├── AIAPIService.swift          # AI API 服务
+│   └── AICareManager.swift         # AI 关怀管理器
 └── StatusBarController.swift   # 状态栏控制器
 ```
 
@@ -105,8 +109,8 @@ clock/
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/yourusername/xiaban-assistant.git
-cd xiaban-assistant
+git clone https://github.com/casper669/countdown-assistant.git
+cd countdown-assistant
 ```
 
 2. 打开项目
