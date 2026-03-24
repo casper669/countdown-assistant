@@ -23,27 +23,35 @@ struct WorkTimeConfig: Codable {
         startTime: "09:00",
         endTime: "18:00",
         lunchStart: "12:00",
-        lunchDuration: 60
+        lunchDuration: 90
     )
 
-    /// 将时间字符串（如 "09:00"）转换为今天的 Date 对象
-    /// - Parameter timeString: 时间字符串（格式：HH:mm）
+    /// 将时间字符串（如 "09:00" 或 "9:00"）转换为今天的 Date 对象
+    /// - Parameter timeString: 时间字符串（格式：HH:mm 或 H:mm）
     /// - Returns: Date 对象或 nil
     func timeToDate(_ timeString: String) -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        guard let time = formatter.date(from: timeString) else { return nil }
+        // 去除首尾空格
+        let trimmedString = timeString.trimmingCharacters(in: .whitespaces)
+
+        // 直接解析时间字符串，提取小时和分钟
+        let components = trimmedString.split(separator: ":")
+        guard components.count == 2,
+              let hour = Int(components[0]),
+              let minute = Int(components[1]),
+              hour >= 0 && hour < 24,
+              minute >= 0 && minute < 60 else {
+            print("❌ 时间解析失败: '\(timeString)' -> components: \(components)")
+            return nil
+        }
 
         let calendar = Calendar.current
         let now = Date()
-        let components = calendar.dateComponents([.year, .month, .day], from: now)
-        let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
+        dateComponents.hour = hour
+        dateComponents.minute = minute
+        dateComponents.second = 0
 
-        var finalComponents = components
-        finalComponents.hour = timeComponents.hour
-        finalComponents.minute = timeComponents.minute
-
-        return calendar.date(from: finalComponents)
+        return calendar.date(from: dateComponents)
     }
 
     /// 计算总工作时长（秒）

@@ -43,7 +43,16 @@ class NotificationManager: ObservableObject {
     private var lastCheckedDate: Date?  // 记录上次检查的日期
 
     init() {
-        self.notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+        // 检查是否是首次启动
+        let hasLaunchedBefore = UserDefaults.standard.object(forKey: "notificationsEnabled") != nil
+
+        if hasLaunchedBefore {
+            self.notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+        } else {
+            // 首次启动，默认启用通知
+            self.notificationsEnabled = true
+            UserDefaults.standard.set(true, forKey: "notificationsEnabled")
+        }
 
         let savedReminderMinutes = UserDefaults.standard.integer(forKey: "reminderMinutes")
         self.reminderMinutes = savedReminderMinutes == 0 ? 30 : savedReminderMinutes
@@ -52,6 +61,11 @@ class NotificationManager: ObservableObject {
 
         let savedLunchReminderMinutes = UserDefaults.standard.integer(forKey: "lunchReminderMinutes")
         self.lunchReminderMinutes = savedLunchReminderMinutes == 0 ? 10 : savedLunchReminderMinutes
+
+        // 请求通知权限
+        if self.notificationsEnabled {
+            requestPermission()
+        }
     }
 
     func requestPermission() {
@@ -108,6 +122,13 @@ class NotificationManager: ObservableObject {
     }
 
     private func sendNotification(remainingMinutes: Int) {
+        // 优先使用宠物提醒
+        if PetManager.shared.config.enabled {
+            PetManager.shared.showPet(withMessage: "还有 \(remainingMinutes) 分钟就下班了！记得保存工作哦～")
+            return
+        }
+
+        // 如果宠物未启用，使用系统通知
         let content = UNMutableNotificationContent()
         content.title = "下班提醒"
         content.body = "还有 \(remainingMinutes) 分钟就下班了！"
@@ -127,6 +148,13 @@ class NotificationManager: ObservableObject {
     }
 
     private func sendLunchNotification(remainingMinutes: Int) {
+        // 优先使用宠物提醒
+        if PetManager.shared.config.enabled {
+            PetManager.shared.showPet(withMessage: "还有 \(remainingMinutes) 分钟就到午休时间了！该准备吃饭啦～")
+            return
+        }
+
+        // 如果宠物未启用，使用系统通知
         let content = UNMutableNotificationContent()
         content.title = "午休提醒"
         content.body = "还有 \(remainingMinutes) 分钟就到午休时间了！"
@@ -149,6 +177,13 @@ class NotificationManager: ObservableObject {
     func sendWorkEndNotification() {
         guard notificationsEnabled else { return }
 
+        // 优先使用宠物提醒
+        if PetManager.shared.config.enabled {
+            PetManager.shared.showPet(withMessage: "下班啦！辛苦了一天，该好好休息了 🎉")
+            return
+        }
+
+        // 如果宠物未启用，使用系统通知
         let content = UNMutableNotificationContent()
         content.title = "下班啦！"
         content.body = "辛苦了一天，该休息了 🎉"

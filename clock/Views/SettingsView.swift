@@ -12,6 +12,19 @@ struct SettingsView: View {
     @ObservedObject var configManager: ConfigManager
     @ObservedObject var notificationManager: NotificationManager
     @ObservedObject var aiCareManager: AICareManager
+    @ObservedObject var petManager: PetManager
+
+    init(
+        configManager: ConfigManager,
+        notificationManager: NotificationManager,
+        aiCareManager: AICareManager,
+        petManager: PetManager = PetManager.shared
+    ) {
+        self.configManager = configManager
+        self.notificationManager = notificationManager
+        self.aiCareManager = aiCareManager
+        self.petManager = petManager
+    }
 
     var body: some View {
         ZStack {
@@ -42,17 +55,27 @@ struct SettingsView: View {
                         SettingGroup(title: "工作时间", icon: "briefcase.fill", iconColor: .blue) {
                             VStack(spacing: 16) {
                                 SettingRow(label: "上班时间", icon: "sunrise.fill", iconColor: .orange) {
-                                    TextField("09:00", text: $configManager.config.startTime)
-                                        .textFieldStyle(.roundedBorder)
-                                        .frame(width: 100)
-                                        .multilineTextAlignment(.trailing)
+                                    TimePickerField(
+                                        time: Binding(
+                                            get: { configManager.config.startTime },
+                                            set: { newValue in
+                                                configManager.config.startTime = newValue
+                                            }
+                                        ),
+                                        defaultValue: "09:00"
+                                    )
                                 }
 
                                 SettingRow(label: "下班时间", icon: "sunset.fill", iconColor: .blue) {
-                                    TextField("18:00", text: $configManager.config.endTime)
-                                        .textFieldStyle(.roundedBorder)
-                                        .frame(width: 100)
-                                        .multilineTextAlignment(.trailing)
+                                    TimePickerField(
+                                        time: Binding(
+                                            get: { configManager.config.endTime },
+                                            set: { newValue in
+                                                configManager.config.endTime = newValue
+                                            }
+                                        ),
+                                        defaultValue: "18:00"
+                                    )
                                 }
                             }
                         }
@@ -61,15 +84,20 @@ struct SettingsView: View {
                         SettingGroup(title: "午休时间", icon: "cup.and.saucer.fill", iconColor: .green) {
                             VStack(spacing: 16) {
                                 SettingRow(label: "午休开始", icon: "clock.fill", iconColor: .green) {
-                                    TextField("12:00", text: $configManager.config.lunchStart)
-                                        .textFieldStyle(.roundedBorder)
-                                        .frame(width: 100)
-                                        .multilineTextAlignment(.trailing)
+                                    TimePickerField(
+                                        time: Binding(
+                                            get: { configManager.config.lunchStart },
+                                            set: { newValue in
+                                                configManager.config.lunchStart = newValue
+                                            }
+                                        ),
+                                        defaultValue: "12:00"
+                                    )
                                 }
 
                                 SettingRow(label: "午休时长", icon: "timer", iconColor: .green) {
                                     HStack(spacing: 8) {
-                                        TextField("60", value: $configManager.config.lunchDuration, format: .number)
+                                        TextField("90", value: $configManager.config.lunchDuration, format: .number)
                                             .textFieldStyle(.roundedBorder)
                                             .frame(width: 80)
                                             .multilineTextAlignment(.trailing)
@@ -318,6 +346,122 @@ struct SettingsView: View {
                                         .foregroundColor(.orange)
                                         .font(.system(size: 12))
                                     Text("AI 关怀助手会在工作时间发送温馨提醒，帮助你保持健康的工作习惯")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+
+                        // 虚拟宠物设置
+                        SettingGroup(title: "虚拟宠物", icon: "pawprint.fill", iconColor: .pink) {
+                            VStack(spacing: 16) {
+                                HStack {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "heart.fill")
+                                            .foregroundColor(.pink)
+                                            .font(.system(size: 14))
+                                        Text("启用虚拟宠物")
+                                            .font(.system(size: 14))
+                                    }
+
+                                    Spacer()
+
+                                    Toggle("", isOn: Binding(
+                                        get: { petManager.config.enabled },
+                                        set: { newValue in
+                                            var updatedConfig = petManager.config
+                                            updatedConfig.enabled = newValue
+                                            petManager.updateConfig(updatedConfig)
+                                        }
+                                    ))
+                                    .labelsHidden()
+                                    .toggleStyle(.switch)
+                                }
+
+                                SettingRow(label: "宠物类型", icon: "person.fill", iconColor: .orange) {
+                                    Picker("选择宠物", selection: Binding(
+                                        get: { petManager.config.petType },
+                                        set: { newValue in
+                                            var updatedConfig = petManager.config
+                                            updatedConfig.petType = newValue
+                                            petManager.updateConfig(updatedConfig)
+                                        }
+                                    )) {
+                                        ForEach(PetType.allCases) { type in
+                                            Text(type.displayName)
+                                                .tag(type)
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .frame(width: 200)
+                                }
+
+                                SettingRow(label: "自动隐藏", icon: "timer", iconColor: .green) {
+                                    HStack(spacing: 8) {
+                                        TextField("15", value: Binding(
+                                            get: { petManager.config.autoHideDelay },
+                                            set: { newValue in
+                                                var updatedConfig = petManager.config
+                                                updatedConfig.autoHideDelay = newValue
+                                                petManager.updateConfig(updatedConfig)
+                                            }
+                                        ), format: .number)
+                                            .textFieldStyle(.roundedBorder)
+                                            .frame(width: 80)
+                                            .multilineTextAlignment(.trailing)
+                                        Text("秒")
+                                            .foregroundColor(.secondary)
+                                            .font(.system(size: 13))
+                                    }
+                                }
+
+                                SettingRow(label: "窗口透明度", icon: "opacity", iconColor: .purple) {
+                                    HStack(spacing: 8) {
+                                        TextField("0.95", value: Binding(
+                                            get: { petManager.config.windowOpacity },
+                                            set: { newValue in
+                                                var updatedConfig = petManager.config
+                                                updatedConfig.windowOpacity = newValue
+                                                petManager.updateConfig(updatedConfig)
+                                            }
+                                        ), format: .number)
+                                            .textFieldStyle(.roundedBorder)
+                                            .frame(width: 80)
+                                            .multilineTextAlignment(.trailing)
+                                        Text("(0.5-1.0)")
+                                            .foregroundColor(.secondary)
+                                            .font(.system(size: 13))
+                                    }
+                                }
+
+                                // 测试宠物弹窗按钮
+                                HStack {
+                                    Spacer()
+                                    Button(action: {
+                                        petManager.showPet(withMessage: "你好！我是你的虚拟宠物助手，工作累了吗？记得站起来活动一下哦！")
+                                    }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "play.fill")
+                                            Text("测试宠物弹窗")
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .fill(Color.pink.opacity(0.2))
+                                        )
+                                        .foregroundColor(.pink)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                    .disabled(!petManager.config.enabled)
+                                    Spacer()
+                                }
+
+                                HStack {
+                                    Image(systemName: "lightbulb.fill")
+                                        .foregroundColor(.orange)
+                                        .font(.system(size: 12))
+                                    Text("虚拟宠物会在需要发送关怀提醒时自动出现，点击可互动")
                                         .font(.system(size: 12))
                                         .foregroundColor(.secondary)
                                 }

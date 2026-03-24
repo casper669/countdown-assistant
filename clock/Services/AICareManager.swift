@@ -112,23 +112,29 @@ class AICareManager: ObservableObject {
         return hour >= 9 && hour < 18
     }
 
-    /// 发送关怀通知
+    /// 发送关怀通知（优先使用宠物窗口，否则使用系统通知）
     /// - Parameter message: 通知内容
     private func sendNotification(message: String) {
-        let content = UNMutableNotificationContent()
-        content.title = "💡 温馨关怀"
-        content.body = message
-        content.sound = .default
+        // 优先使用宠物提醒
+        if PetManager.shared.config.enabled {
+            PetManager.shared.showPet(withMessage: message)
+        } else {
+            // 如果宠物未启用，使用系统通知
+            let content = UNMutableNotificationContent()
+            content.title = "AI 关怀提醒"
+            content.body = message
+            content.sound = .default
 
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: nil
-        )
+            let request = UNNotificationRequest(
+                identifier: "aiCareReminder",
+                content: content,
+                trigger: nil
+            )
 
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("发送关怀通知失败: \(error.localizedDescription)")
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("发送 AI 关怀通知失败: \(error)")
+                }
             }
         }
     }

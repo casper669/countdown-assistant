@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Cocoa
 
 extension View {
     /// 为窗口设置标识符
@@ -44,6 +45,8 @@ struct clockApp: App {
     @StateObject private var viewModel: CountdownViewModel
     // AI 关怀管理器
     @StateObject private var aiCareManager: AICareManager
+    // 宠物管理器
+    @StateObject private var petManager: PetManager
     // 状态栏控制器
     @StateObject private var statusBarController = StatusBarController()
     // 应用代理
@@ -54,10 +57,12 @@ struct clockApp: App {
         let notification = NotificationManager()
         let holidayVM = HolidayViewModel(configManager: config)
         let aiCare = AICareManager()
+        let pet = PetManager.shared
         _configManager = StateObject(wrappedValue: config)
         _notificationManager = StateObject(wrappedValue: notification)
         _holidayViewModel = StateObject(wrappedValue: holidayVM)
         _aiCareManager = StateObject(wrappedValue: aiCare)
+        _petManager = StateObject(wrappedValue: pet)
         _viewModel = StateObject(wrappedValue: CountdownViewModel(configManager: config, notificationManager: notification, holidayViewModel: holidayVM))
     }
 
@@ -85,7 +90,8 @@ struct clockApp: App {
             SettingsView(
                 configManager: configManager,
                 notificationManager: notificationManager,
-                aiCareManager: aiCareManager
+                aiCareManager: aiCareManager,
+                petManager: petManager
             )
         }
         .windowResizability(.contentSize)

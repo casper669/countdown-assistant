@@ -24,8 +24,12 @@ class ConfigManager: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let decoded = try? JSONDecoder().decode(WorkTimeConfig.self, from: data) {
             self.config = decoded
+            print("📝 加载配置:")
+            print("   上班: \(decoded.startTime), 下班: \(decoded.endTime)")
         } else {
             self.config = .default
+            print("📝 使用默认配置:")
+            print("   上班: \(WorkTimeConfig.default.startTime), 下班: \(WorkTimeConfig.default.endTime)")
         }
     }
 

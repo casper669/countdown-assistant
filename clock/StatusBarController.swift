@@ -39,25 +39,42 @@ class StatusBarController: NSObject, ObservableObject {
 
     /// 状态栏按钮点击事件，切换主窗口的显示/隐藏
     @objc private func statusBarButtonClicked() {
-        // 点击状态栏时切换主窗口的显示/隐藏
+        // 激活应用
         NSApp.activate(ignoringOtherApps: true)
 
-        // 通过窗口标识符查找，而不是通过标题
+        // 查找主窗口
         if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" }) {
             if window.isVisible {
                 // 如果窗口可见，隐藏它
                 window.orderOut(nil)
             } else {
-                // 如果窗口隐藏，显示它
+                // 如果窗口隐藏，显示并置于最前
                 window.makeKeyAndOrderFront(nil)
+                window.orderFrontRegardless()
             }
         } else {
-            // 如果窗口不存在，等待一下再试
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // 如果窗口不存在，尝试多次查找
+            var attempts = 0
+            let maxAttempts = 5
+
+            func tryShowWindow() {
+                attempts += 1
+
                 if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" }) {
                     window.makeKeyAndOrderFront(nil)
+                    window.orderFrontRegardless()
+                } else if attempts < maxAttempts {
+                    // 继续尝试
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        tryShowWindow()
+                    }
+                } else {
+                    // 最后尝试通过通知打开
+                    NotificationCenter.default.post(name: NSNotification.Name("OpenMainWindow"), object: nil)
                 }
             }
+
+            tryShowWindow()
         }
     }
 

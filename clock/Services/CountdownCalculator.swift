@@ -37,21 +37,29 @@ class CountdownCalculator {
         guard let startTime = config.timeToDate(config.startTime),
               let endTime = config.timeToDate(config.endTime),
               let lunchStart = config.timeToDate(config.lunchStart) else {
+            print("❌ 时间解析失败: start=\(config.startTime), end=\(config.endTime), lunch=\(config.lunchStart)")
             return .afterWork
         }
 
         let lunchEnd = lunchStart.addingTimeInterval(Double(config.lunchDuration * 60))
 
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
         // 判断当前状态
         if currentTime < startTime {
+           
             return .beforeWork
         } else if currentTime >= startTime && currentTime < lunchStart {
+           
             return .working
         } else if currentTime >= lunchStart && currentTime < lunchEnd {
+          
             return .lunch
         } else if currentTime >= lunchEnd && currentTime < endTime {
+           
             return .working
         } else {
+    
             return .afterWork
         }
     }

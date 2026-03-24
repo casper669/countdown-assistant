@@ -7,6 +7,50 @@
 
 import SwiftUI
 
+/// 窗口关闭监听器
+struct WindowCloseMonitor: NSViewRepresentable {
+    let onClose: () -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            if let window = view.window {
+                context.coordinator.window = window
+                NotificationCenter.default.addObserver(
+                    context.coordinator,
+                    selector: #selector(Coordinator.windowWillClose(_:)),
+                    name: NSWindow.willCloseNotification,
+                    object: window
+                )
+            }
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onClose: onClose)
+    }
+
+    class Coordinator {
+        let onClose: () -> Void
+        weak var window: NSWindow?
+
+        init(onClose: @escaping () -> Void) {
+            self.onClose = onClose
+        }
+
+        @objc func windowWillClose(_ notification: Notification) {
+            onClose()
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
+    }
+}
+
 /// 主窗口视图，显示工作状态、倒计时和重要信息
 struct MainWindowView: View {
     @ObservedObject var viewModel: CountdownViewModel
@@ -193,6 +237,14 @@ struct MainWindowView: View {
             }
         }
         .frame(width: 600, height: 720)
+        .background(
+            WindowCloseMonitor {
+                // 主窗口关闭时，同时关闭设置窗口
+                if let settingsWindow = NSApp.windows.first(where: { $0.identifier?.rawValue == "settings" }) {
+                    settingsWindow.close()
+                }
+            }
+        )
         .onAppear {
             isAnimating = true
 
