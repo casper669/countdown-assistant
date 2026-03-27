@@ -171,6 +171,37 @@ struct SettingsView: View {
                                             .font(.system(size: 13))
                                     }
                                 }
+
+                                Divider()
+
+                                HStack {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "bag.fill")
+                                            .foregroundColor(.orange)
+                                            .font(.system(size: 14))
+                                        Text("启用外卖提醒")
+                                            .font(.system(size: 14))
+                                    }
+
+                                    Spacer()
+
+                                    Toggle("", isOn: $notificationManager.takeoutReminderEnabled)
+                                        .labelsHidden()
+                                        .toggleStyle(.switch)
+                                }
+
+                                SettingRow(label: "外卖时间", icon: "clock.fill", iconColor: .orange) {
+                                    TimePickerField(
+                                        time: Binding(
+                                            get: { notificationManager.takeoutTime },
+                                            set: { newValue in
+                                                notificationManager.takeoutTime = newValue
+                                            }
+                                        ),
+                                        defaultValue: "11:30"
+                                    )
+                                    .disabled(!notificationManager.takeoutReminderEnabled)
+                                }
                             }
                         }
 
@@ -495,7 +526,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .frame(width: 520, height: 950)
+        .frame(width: 460, height: 780)
     }
 }
 

@@ -9,21 +9,27 @@ import SwiftUI
 import Cocoa
 
 extension View {
-    /// 为窗口设置标识符
-    func withWindowIdentifier(_ identifier: String) -> some View {
-        self.background(WindowIdentifierSetter(identifier: identifier))
+    /// 为窗口设置标识符和层级
+    func withWindowIdentifier(_ identifier: String, level: NSWindow.Level = .normal) -> some View {
+        self.background(WindowIdentifierSetter(identifier: identifier, level: level))
     }
 }
 
-/// 辅助视图，用于设置窗口标识符
+/// 辅助视图，用于设置窗口标识符和层级
 struct WindowIdentifierSetter: NSViewRepresentable {
     let identifier: String
+    let level: NSWindow.Level
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         DispatchQueue.main.async {
             if let window = view.window {
                 window.identifier = NSUserInterfaceItemIdentifier(identifier)
+                window.level = level
+                // 设置窗口可以成为主窗口和关键窗口
+                window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+                window.styleMask.insert([.titled, .closable, .miniaturizable])
+                window.isReleasedWhenClosed = false
             }
         }
         return view
@@ -80,10 +86,11 @@ struct clockApp: App {
                 // 设置状态栏
                 statusBarController.setupStatusBar(viewModel: viewModel)
             }
-            .withWindowIdentifier("main")
+            .withWindowIdentifier("main") // 正常窗口层级
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+        .windowStyle(.hiddenTitleBar) // 隐藏标题栏以保持简洁
 
         // 设置窗口
         Window("设置", id: "settings") {
@@ -96,6 +103,7 @@ struct clockApp: App {
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+        .windowStyle(.hiddenTitleBar)
     }
 }
 

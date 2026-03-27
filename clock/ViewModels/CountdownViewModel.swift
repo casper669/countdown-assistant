@@ -56,6 +56,9 @@ class CountdownViewModel: ObservableObject {
             }
         }
 
+        // 检查外卖提醒
+        notificationManager.checkAndSendTakeoutReminder()
+
         // 检查是否刚下班
         if previousStatus == .working && status == .afterWork {
             notificationManager.sendWorkEndNotification()

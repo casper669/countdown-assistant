@@ -42,8 +42,23 @@ class StatusBarController: NSObject, ObservableObject {
         // 激活应用
         NSApp.activate(ignoringOtherApps: true)
 
-        // 查找主窗口
+        // 查找主窗口，支持通过多种方式查找
+        var mainWindow: NSWindow? = nil
+
+        // 方法1：通过标识符查找（首选）
         if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" }) {
+            mainWindow = window
+        }
+        // 方法2：通过窗口标题查找（备选）
+        else if let window = NSApp.windows.first(where: { $0.title.contains("下班助手") || $0.title == "下班倒计时" }) {
+            mainWindow = window
+        }
+        // 方法3：取第一个可用窗口（兜底）
+        else if let window = NSApp.windows.first {
+            mainWindow = window
+        }
+
+        if let window = mainWindow {
             if window.isVisible {
                 // 如果窗口可见，隐藏它
                 window.orderOut(nil)
@@ -51,6 +66,8 @@ class StatusBarController: NSObject, ObservableObject {
                 // 如果窗口隐藏，显示并置于最前
                 window.makeKeyAndOrderFront(nil)
                 window.orderFrontRegardless()
+                // 确保窗口位于所有应用程序之上
+                window.level = .floating
             }
         } else {
             // 如果窗口不存在，尝试多次查找
@@ -60,9 +77,20 @@ class StatusBarController: NSObject, ObservableObject {
             func tryShowWindow() {
                 attempts += 1
 
+                // 再次尝试查找窗口
+                var foundWindow: NSWindow? = nil
                 if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" }) {
+                    foundWindow = window
+                } else if let window = NSApp.windows.first(where: { $0.title.contains("下班助手") }) {
+                    foundWindow = window
+                } else if let window = NSApp.windows.first {
+                    foundWindow = window
+                }
+
+                if let window = foundWindow {
                     window.makeKeyAndOrderFront(nil)
                     window.orderFrontRegardless()
+                    window.level = .normal
                 } else if attempts < maxAttempts {
                     // 继续尝试
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {

@@ -38,8 +38,21 @@ class NotificationManager: ObservableObject {
         }
     }
 
+    @Published var takeoutReminderEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(takeoutReminderEnabled, forKey: "takeoutReminderEnabled")
+        }
+    }
+
+    @Published var takeoutTime: String {
+        didSet {
+            UserDefaults.standard.set(takeoutTime, forKey: "takeoutTime")
+        }
+    }
+
     private var hasShownTodayReminder = false
     private var hasShownTodayLunchReminder = false
+    private var hasShownTodayTakeoutReminder = false
     private var lastCheckedDate: Date?  // 记录上次检查的日期
 
     init() {
@@ -61,6 +74,11 @@ class NotificationManager: ObservableObject {
 
         let savedLunchReminderMinutes = UserDefaults.standard.integer(forKey: "lunchReminderMinutes")
         self.lunchReminderMinutes = savedLunchReminderMinutes == 0 ? 10 : savedLunchReminderMinutes
+
+        self.takeoutReminderEnabled = UserDefaults.standard.bool(forKey: "takeoutReminderEnabled")
+
+        let savedTakeoutTime = UserDefaults.standard.string(forKey: "takeoutTime")
+        self.takeoutTime = savedTakeoutTime ?? "11:30"
 
         // 请求通知权限
         if self.notificationsEnabled {
@@ -86,6 +104,7 @@ class NotificationManager: ObservableObject {
         if let lastDate = lastCheckedDate, !calendar.isDate(lastDate, inSameDayAs: today) {
             hasShownTodayReminder = false
             hasShownTodayLunchReminder = false
+            hasShownTodayTakeoutReminder = false
         }
         lastCheckedDate = today
 
@@ -118,6 +137,74 @@ class NotificationManager: ObservableObject {
         // 如果已经过了午休时间，重置标志
         if timeUntilLunch < -60 {  // 超过午休时间1分钟后才重置，避免边界问题
             hasShownTodayLunchReminder = false
+        }
+    }
+
+    func checkAndSendTakeoutReminder() {
+        guard takeoutReminderEnabled else { return }
+
+        let calendar = Calendar.current
+        let now = Date()
+
+        // 检查是否是新的一天，重置外卖提醒标志
+        if let lastDate = lastCheckedDate, !calendar.isDate(lastDate, inSameDayAs: now) {
+            hasShownTodayTakeoutReminder = false
+        }
+
+        // 解析外卖时间
+        let timeComponents = takeoutTime.split(separator: ":")
+        guard timeComponents.count == 2,
+              let hour = Int(timeComponents[0]),
+              let minute = Int(timeComponents[1]),
+              hour >= 0 && hour < 24,
+              minute >= 0 && minute < 60 else {
+            return
+        }
+
+        // 创建今天的外卖时间
+        var takeoutComponents = calendar.dateComponents([.year, .month, .day], from: now)
+        takeoutComponents.hour = hour
+        takeoutComponents.minute = minute
+        takeoutComponents.second = 0
+
+        guard let takeoutDate = calendar.date(from: takeoutComponents) else {
+            return
+        }
+
+        // 检查是否到了外卖提醒时间
+        let timeDifference = takeoutDate.timeIntervalSince(now)
+
+        // 当时间差在 -30 到 60 秒之间时发送通知（允许更大的窗口）
+        // -30 秒表示已经过了30秒内也可以触发
+        if timeDifference >= -30 && timeDifference <= 60 && !hasShownTodayTakeoutReminder {
+            sendTakeoutNotification()
+            hasShownTodayTakeoutReminder = true
+        }
+    }
+
+    private func sendTakeoutNotification() {
+        // 优先使用宠物提醒
+        if PetManager.shared.config.enabled {
+            PetManager.shared.showPet(withMessage: "该点外卖了！记得按时吃饭哦～")
+            return
+        }
+
+        // 如果宠物未启用，使用系统通知
+        let content = UNMutableNotificationContent()
+        content.title = "外卖提醒"
+        content.body = "该点外卖了！"
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "takeoutReminder",
+            content: content,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to send takeout notification: \(error)")
+            }
         }
     }
 

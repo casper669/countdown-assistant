@@ -71,7 +71,7 @@ struct MainWindowView: View {
 
             VStack(spacing: 20) {
                 // 顶部状态栏
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     Circle()
                         .fill(
                             LinearGradient(
@@ -80,40 +80,40 @@ struct MainWindowView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 60, height: 60)
+                        .frame(width: 48, height: 48)
                         .overlay(
                             Image(systemName: statusIcon)
-                                .font(.system(size: 28))
+                                .font(.system(size: 22))
                                 .foregroundColor(.white)
                         )
-                        .shadow(color: statusColor.opacity(0.4), radius: 12, x: 0, y: 6)
+                        .shadow(color: statusColor.opacity(0.4), radius: 10, x: 0, y: 4)
                         .scaleEffect(isAnimating ? 1.05 : 1.0)
                         .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isAnimating)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(viewModel.status.displayText)
-                            .font(.system(size: 24, weight: .bold))
+                            .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.primary)
 
                         Text(currentTimeString)
-                            .font(.system(size: 14))
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     }
 
                     Spacer()
                 }
-                .padding(.horizontal, 32)
-                .padding(.top, 24)
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
 
                 // 主倒计时卡片
                 if viewModel.status == .working || viewModel.status == .lunch {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         Text("距离下班还有")
-                            .font(.system(size: 16, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
 
                         Text(viewModel.displayText)
-                            .font(.system(size: 64, weight: .bold, design: .rounded))
+                            .font(.system(size: 52, weight: .bold, design: .rounded))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [.blue, .cyan],
@@ -124,37 +124,37 @@ struct MainWindowView: View {
                             .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 48)
+                    .padding(.vertical, 32)
                     .background(
-                        RoundedRectangle(cornerRadius: 20)
+                        RoundedRectangle(cornerRadius: 16)
                             .fill(Color.blue.opacity(0.08))
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(Color.blue.opacity(0.2), lineWidth: 1)
                     )
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 24)
                 } else {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         Text(viewModel.displayText)
-                            .font(.system(size: 32, weight: .semibold))
+                            .font(.system(size: 26, weight: .semibold))
                             .foregroundColor(statusColor)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 40)
+                    .padding(.vertical, 28)
                     .background(
-                        RoundedRectangle(cornerRadius: 20)
+                        RoundedRectangle(cornerRadius: 16)
                             .fill(statusColor.opacity(0.08))
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(statusColor.opacity(0.2), lineWidth: 1)
                     )
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 24)
                 }
 
                 // 周末和假期卡片
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     // 周末倒计时
                     InfoCard(
                         icon: "calendar",
@@ -173,10 +173,10 @@ struct MainWindowView: View {
                         )
                     }
                 }
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
 
                 // 工作时间信息
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     SmallInfoCard(
                         icon: "sunrise.fill",
                         iconColor: .orange,
@@ -198,45 +198,45 @@ struct MainWindowView: View {
                         value: "\(configManager.config.lunchDuration)分"
                     )
                 }
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
 
                 Spacer()
 
                 // 底部按钮
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     Button(action: { openWindow(id: "settings") }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: "gearshape.fill")
                             Text("设置")
                         }
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 10)
                         .background(Color.gray.opacity(0.1))
                         .foregroundColor(.primary)
-                        .cornerRadius(10)
+                        .cornerRadius(8)
                     }
                     .buttonStyle(.plain)
 
                     Button(action: { NSApplication.shared.terminate(nil) }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Image(systemName: "power")
                             Text("退出")
                         }
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 10)
                         .background(Color.red.opacity(0.1))
                         .foregroundColor(.red)
-                        .cornerRadius(10)
+                        .cornerRadius(8)
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 32)
-                .padding(.bottom, 32)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
             }
         }
-        .frame(width: 600, height: 720)
+        .frame(width: 480, height: 580)
         .background(
             WindowCloseMonitor {
                 // 主窗口关闭时，同时关闭设置窗口
@@ -258,8 +258,16 @@ struct MainWindowView: View {
                 MainWindowView.isFirstLaunch = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     NSApp.activate(ignoringOtherApps: true)
-                    if let window = NSApp.windows.first(where: { $0.title == "下班倒计时" }) {
+                    // 通过多种方式查找窗口
+                    if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "main" }) {
                         window.makeKeyAndOrderFront(nil)
+                        window.orderFrontRegardless()
+                    } else if let window = NSApp.windows.first(where: { $0.title.contains("下班") }) {
+                        window.makeKeyAndOrderFront(nil)
+                        window.orderFrontRegardless()
+                    } else if let window = NSApp.windows.first {
+                        window.makeKeyAndOrderFront(nil)
+                        window.orderFrontRegardless()
                     }
                 }
             }
@@ -306,27 +314,27 @@ struct InfoCard: View {
     let value: String
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 32))
+                .font(.system(size: 26))
                 .foregroundColor(iconColor)
 
             Text(title)
-                .font(.system(size: 13))
+                .font(.system(size: 12))
                 .foregroundColor(.secondary)
 
             Text(value)
-                .font(.system(size: 20, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.primary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, 18)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(iconColor.opacity(0.08))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .stroke(iconColor.opacity(0.2), lineWidth: 1)
         )
     }
@@ -340,23 +348,23 @@ struct SmallInfoCard: View {
     let value: String
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(.system(size: 16))
                 .foregroundColor(iconColor)
 
             Text(label)
-                .font(.system(size: 11))
+                .font(.system(size: 10))
                 .foregroundColor(.secondary)
 
             Text(value)
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.primary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color.gray.opacity(0.05))
         )
     }
